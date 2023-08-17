@@ -62,12 +62,12 @@ public class UserStorageImpl implements UserStorage {
 
     @Override
     public User getUserById(long userId) {
-        try {
+        if (users.containsKey(userId)) {
             log.info("Выдан пользователь с ID={}", userId);
             return users.get(userId);
-        } catch (Exception e) {
-            log.error("Ошибка при попытке получить пользователя с ID={}: {}", userId, e.getMessage());
-            throw new NotFoundException("пользователь с таким ID  не найдена");
         }
+        log.error("Ошибка при попытке получить пользователя с ID={}", userId);
+        throw new NotFoundException("Пользователь с таким ID  не найден");
+
     }
 }

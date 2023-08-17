@@ -39,14 +39,13 @@ public class ItemStorageImpl implements ItemStorage {
     }
 
     @Override
-    public Item getItemById(long id) {
-        try {
-            log.info("Выдана вещь с ID={}", id);
-            return items.get(id);
-        } catch (Exception e) {
-            log.error("Ошибка при попытке получить вещь с ID={}: {}", id, e.getMessage());
-            throw new NotFoundException("Вещь с таким ID  не найдена");
+    public Item getItemById(long itemId) {
+        if (items.containsKey(itemId)) {
+            log.info("Выдана вещь с ID={}", itemId);
+            return items.get(itemId);
         }
+        log.error("Ошибка при попытке получить вещь с ID={}", itemId);
+        throw new NotFoundException("Вещь с таким ID  не найдена");
     }
 
     @Override
@@ -74,8 +73,8 @@ public class ItemStorageImpl implements ItemStorage {
             if (updatedItem.getName() != null && !updatedItem.getName().isBlank()) {
                 item.setName(updatedItem.getName());
             }
-            if (updatedItem.getDescription() != null &&
-                    !updatedItem.getDescription().isBlank()) {
+            if (updatedItem.getDescription() != null
+                    && !updatedItem.getDescription().isBlank()) {
                 item.setDescription(updatedItem.getDescription());
             }
             if (updatedItem.getAvailable() != null) {
