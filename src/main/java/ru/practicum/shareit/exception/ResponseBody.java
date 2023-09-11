@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ResponseBody {
-    private String className;
     private String message;
+
 }
