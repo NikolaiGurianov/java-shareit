@@ -10,14 +10,11 @@ import java.util.List;
 public interface UserService {
     List<UserDto> getUsers();
 
-    @Transactional
     User createUser(UserDto userDto);
 
     User updateUser(UserDto user, Long userId);
 
-    @Transactional
     void deleteUserById(long userId);
 
-    @Transactional
     UserDto getUserById(Long userId);
 }

@@ -21,4 +21,10 @@ public class BookingDto {
     private BookerDto booker;
     private Status status;
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BookerDto {
+        private long id;
+    }
 }

@@ -19,6 +19,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.Constant;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -128,7 +129,7 @@ public class BookingServiceImpl implements BookingService {
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = {} не найден", ownerId));
         List<Booking> bookingList = bookingRepository
-                .findByItemIdInOrderByStartDesc(itemRepository.findItemIdsByOwner_Id(ownerId));
+                .findByItemIdIn(itemRepository.findItemIdsByOwner_Id(ownerId), Constant.SORT_BY_DESC);
         return filterBookingsByStatus(bookingList, state);
     }
 
@@ -142,37 +143,38 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllByBooker_IdOrderByStartDesc(bookerId);
+                bookings = bookingRepository.findAllByBooker_Id(bookerId, Constant.SORT_BY_DESC);
                 for (Booking booking : bookings) {
                     bookingsDto.add(bookingMapper.toBookingDto(booking));
                 }
                 return bookingsDto;
             case CURRENT:
-                bookings = bookingRepository.findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId, now, now);
+                bookings = bookingRepository.findAllByBooker_IdAndStartBeforeAndEndAfter(bookerId,
+                        now, now, Constant.SORT_BY_DESC);
                 for (Booking booking : bookings) {
                     bookingsDto.add(bookingMapper.toBookingDto(booking));
                 }
                 return bookingsDto;
             case FUTURE:
-                bookings = bookingRepository.findAllByBooker_IdAndStartAfterOrderByStartDesc(bookerId, now);
+                bookings = bookingRepository.findAllByBooker_IdAndStartAfter(bookerId, now, Constant.SORT_BY_DESC);
                 for (Booking booking : bookings) {
                     bookingsDto.add(bookingMapper.toBookingDto(booking));
                 }
                 return bookingsDto;
             case PAST:
-                bookings = bookingRepository.findAllByBooker_IdAndEndBeforeOrderByStartDesc(bookerId, now);
+                bookings = bookingRepository.findAllByBooker_IdAndEndBefore(bookerId, now, Constant.SORT_BY_DESC);
                 for (Booking booking : bookings) {
                     bookingsDto.add(bookingMapper.toBookingDto(booking));
                 }
                 return bookingsDto;
             case WAITING:
-                bookings = bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(bookerId, Status.WAITING);
+                bookings = bookingRepository.findAllByBooker_IdAndStatus(bookerId, Status.WAITING, Constant.SORT_BY_DESC);
                 for (Booking booking : bookings) {
                     bookingsDto.add(bookingMapper.toBookingDto(booking));
                 }
                 return bookingsDto;
             case REJECTED:
-                bookings = bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(bookerId, Status.REJECTED);
+                bookings = bookingRepository.findAllByBooker_IdAndStatus(bookerId, Status.REJECTED, Constant.SORT_BY_DESC);
                 for (Booking booking : bookings) {
                     bookingsDto.add(bookingMapper.toBookingDto(booking));
                 }

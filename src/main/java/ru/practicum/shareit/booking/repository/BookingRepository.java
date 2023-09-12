@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.repository;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Component;
@@ -11,19 +12,19 @@ import java.util.List;
 
 @Component
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findAllByBooker_IdOrderByStartDesc(Long bookerId);
+    List<Booking> findAllByBooker_Id(Long bookerId, Sort sort);
 
-    List<Booking> findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(Long bookerId, LocalDateTime dateTime,
-                                                                              LocalDateTime dateTime1);
+    List<Booking> findAllByBooker_IdAndStartBeforeAndEndAfter(Long bookerId, LocalDateTime dateTime,
+                                                              LocalDateTime dateTime1, Sort sort);
 
-    List<Booking> findAllByBooker_IdAndEndBeforeOrderByStartDesc(Long bookerId, LocalDateTime dateTime);
+    List<Booking> findAllByBooker_IdAndEndBefore(Long bookerId, LocalDateTime dateTime, Sort sort);
 
-    List<Booking> findAllByBooker_IdAndStartAfterOrderByStartDesc(Long bookerId, LocalDateTime dateTime);
+    List<Booking> findAllByBooker_IdAndStartAfter(Long bookerId, LocalDateTime dateTime, Sort sort);
 
-    List<Booking> findAllByBooker_IdAndStatusOrderByStartDesc(Long bookerId, Status status);
+    List<Booking> findAllByBooker_IdAndStatus(Long bookerId, Status status, Sort sort);
 
 
-    List<Booking> findByItemIdInOrderByStartDesc(List<Long> itemIds);
+    List<Booking> findByItemIdIn(List<Long> itemIds, Sort sort);
 
     List<Booking> findByItem_Id(Long itemId);
 
