@@ -138,8 +138,8 @@ class ShareItTests {
         UserDto actualUser = new UserDto(1L, "Name", "email@email.ru");
         userService.createUser(actualUser);
         ItemDto actuaItem = new ItemDto(1L, "Дрель", "Description", true, 1L, 1L);
-        ItemDto actualItem2 = new ItemDto(1L, "NewName", "Насадка на дрель", true, 1L, 1L);
-        ItemDto actualItem3 = new ItemDto(1L, "NewName", "Description", true, 1L, 1L);
+        ItemDto actualItem2 = new ItemDto(2L, "Name", "Насадка на дрель", true, 1L, 1L);
+        ItemDto actualItem3 = new ItemDto(3L, "NewName", "Description", true, 1L, 1L);
 
         itemService.addItem(actuaItem, actualUser.getId());
         itemService.addItem(actualItem2, actualUser.getId());
