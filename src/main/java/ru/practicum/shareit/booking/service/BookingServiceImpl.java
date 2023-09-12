@@ -13,6 +13,7 @@ import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.ErrorException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.UnknownStateException;
 import ru.practicum.shareit.exception.ValidException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -21,7 +22,6 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -127,7 +127,6 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> getBookingsByOwner(Long ownerId, State state) {
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = {} не найден", ownerId));
-        if (state == State.UNSUPPORTED_STATUS) throw new ErrorException("Unknown state: UNSUPPORTED_STATUS");
         List<Booking> bookingList = bookingRepository
                 .findByItemIdInOrderByStartDesc(itemRepository.findItemIdsByOwner_Id(ownerId));
         return filterBookingsByStatus(bookingList, state);
@@ -139,7 +138,6 @@ public class BookingServiceImpl implements BookingService {
         userRepository.findById(bookerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID={} не найден", bookerId));
         List<Booking> bookings;
-        if (state == State.UNSUPPORTED_STATUS) throw new ErrorException("Unknown state: UNSUPPORTED_STATUS");
         List<BookingDto> bookingsDto = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
@@ -180,7 +178,7 @@ public class BookingServiceImpl implements BookingService {
                 }
                 return bookingsDto;
             default:
-                return Collections.emptyList();
+                throw new UnknownStateException("Unknown state: " + state);
         }
     }
 
@@ -222,7 +220,7 @@ public class BookingServiceImpl implements BookingService {
                         .map(bookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             default:
-                throw new ErrorException("Unknown state: " + state);
+                throw new UnknownStateException("Unknown state: " + state);
         }
     }
 }

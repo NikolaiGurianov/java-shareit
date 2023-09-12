@@ -12,12 +12,11 @@ import org.springframework.web.server.ResponseStatusException;
 @ControllerAdvice
 public class CentralizedErrorHandler {
 
-    @ExceptionHandler(ErrorException.class)
+
+    @ExceptionHandler({ErrorException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<?> handleUserException(final ErrorException e) {
         return new ResponseEntity<>(new ResponseBody(e.getMessage()), HttpStatus.valueOf(500));
-
-
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -36,6 +35,13 @@ public class CentralizedErrorHandler {
     public ResponseEntity<?> handleException(final ResponseStatusException e) {
         return new ResponseEntity<>(new ResponseBody(e.getReason()), e.getStatus());
     }
+
+    @ExceptionHandler(UnknownStateException.class)
+    public ResponseEntity<?> handleUnknownStateException(final UnknownStateException e) {
+        return new ResponseEntity<>(new ResponseBody(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+
+    }
+
 
 }
 
