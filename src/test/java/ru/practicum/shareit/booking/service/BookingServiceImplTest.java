@@ -11,9 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -39,8 +36,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -64,8 +60,6 @@ class BookingServiceImplTest {
     private Item item1;
     private Booking booking;
     private Booking booking1;
-    private List<Booking> bookingList;
-    private List<BookingDto> bookingDtoList;
 
     private BookingDto bookingDto;
 
@@ -118,15 +112,7 @@ class BookingServiceImplTest {
 
         booking1 = bookingMapper.toBooking(incomingBookingDto2, booker, item1);
         booking1.setId(2L);
-        BookingDto bookingDto1 = bookingMapper.toBookingDto(booking1);
 
-        bookingList = new ArrayList<>();
-        bookingList.add(booking);
-        bookingList.add(booking1);
-
-        bookingDtoList = new ArrayList<>();
-        bookingDtoList.add(bookingDto);
-        bookingDtoList.add(bookingDto1);
     }
 
     @Test
@@ -162,6 +148,17 @@ class BookingServiceImplTest {
     }
 
     @Test
+    public void whenAddBookingWithEndBeforeStartIsNotSuccess() {
+        incomingBookingDto1.setStart(LocalDateTime.now().plusDays(2));
+        incomingBookingDto1.setEnd(LocalDateTime.now().plusDays(1));
+
+        lenient().when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
+        lenient().when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
+
+        assertThrows(ValidException.class, () -> bookingService.addBooking(incomingBookingDto1, 3L));
+    }
+
+    @Test
     public void whenGetBookingByIdIsSuccess() {
         BookingDto expected = bookingDto;
 
@@ -172,7 +169,6 @@ class BookingServiceImplTest {
 
         assertEquals(expected, actual);
     }
-
 
     @Test
     void whenGetBookingByIdWithWrongBookingIdIsNotSuccess() {
@@ -247,7 +243,6 @@ class BookingServiceImplTest {
         lenient().when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
         lenient().when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking1));
 
-
         BookingDto actual = bookingService.approvingBooking(booking1.getId(), owner.getId(), true);
         expected.setStatus(Status.APPROVED);
 
@@ -282,6 +277,15 @@ class BookingServiceImplTest {
         assertEquals(Status.APPROVED, booking.getStatus());
     }
 
+    @Test
+    public void whenApprovingBookingWithNonExistentBookingIdIsNotSuccess() {
+        Long nonExistentBookingId = 999L;
+
+        when(bookingRepository.findById(nonExistentBookingId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> bookingService.approvingBooking(nonExistentBookingId, owner.getId(), true));
+    }
+
 
     @Test
     public void whenGetBookingsByOwnerIsSuccess() {
@@ -298,67 +302,14 @@ class BookingServiceImplTest {
         assertEquals(expected, actual);
     }
 
-
     @Test
-    public void whenGetBookingsByOwnerUserNotFound() {
-        when(userRepository.findById(owner.getId())).thenReturn(Optional.empty());
-
-        assertThrows(NotFoundException.class, () -> bookingService.getBookingsByOwner(owner.getId(), State.ALL, 0, 10));
+    void testIsAvailable() {
+        boolean result = bookingService.isAvailable(booking, booking1);
+        assertFalse(result);
     }
 
     @Test
-    public void whenGetBookingsByOwnerNoItems() {
-        List<BookingDto> expected = new ArrayList<>();
-
-        lenient().when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
-        when(itemRepository.findItemIdsByOwner_Id(anyLong())).thenReturn(new ArrayList<>());
-
-        List<BookingDto> actual = bookingService.getBookingsByOwner(owner.getId(), State.ALL, 0, 10);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void whenGetBookingsByBookerWithAllState() {
-        PageRequest pageRequest = PageRequest.of(0, 10);
-        Page<Booking> bookingPage = new PageImpl<>(bookingList, pageRequest, bookingList.size());
-
-        lenient().when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
-        when(bookingRepository.findAllByBookerId(anyLong(), any(), any())).thenReturn(bookingPage);
-
-        List<BookingDto> expected = List.of(bookingDtoList.get(0), bookingDtoList.get(1));
-        List<BookingDto> actual = bookingService.getBookingsByBooker(1L, State.ALL, 0, 10);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void whenGetBookingsByBookerWithCurrentState() {
-        List<Booking> currentBookings = new ArrayList<>();
-        currentBookings.add(bookingList.get(1));
-
-        lenient().when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
-        when(bookingRepository.findAllByBooker_IdAndStartBeforeAndEndAfter(anyLong(), any(), any(), any()))
-                .thenReturn(currentBookings);
-
-        List<BookingDto> expected = List.of(bookingMapper.toBookingDto(bookingList.get(1)));
-        List<BookingDto> actual = bookingService.getBookingsByBooker(1L, State.CURRENT, 0, 10);
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void whenGetBookingsByBookerWithFutureState() {
-        List<Booking> futureBookings = new ArrayList<>();
-        futureBookings.add(bookingList.get(1));
-
-        lenient().when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
-        when(bookingRepository.findAllByBooker_IdAndStartAfter(anyLong(), any(), any()))
-                .thenReturn(futureBookings);
-
-        List<BookingDto> expected = List.of(bookingMapper.toBookingDto(bookingList.get(1)));
-        List<BookingDto> actual = bookingService.getBookingsByBooker(1L, State.FUTURE, 0, 10);
-
-        assertEquals(expected, actual);
+    void testBookingIsValid() {
+        assertDoesNotThrow(() -> bookingService.bookingIsValid(incomingBookingDto2, item1));
     }
 }

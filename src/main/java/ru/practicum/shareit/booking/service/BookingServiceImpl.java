@@ -128,13 +128,52 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     @Override
     public List<BookingDto> getBookingsByOwner(Long ownerId, State state, Integer from, Integer size) {
+        LocalDateTime now = LocalDateTime.now();
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = {} не найден", ownerId));
 
         PageRequest pageRequest = PageRequest.of(from / size, size);
         List<Booking> bookingList = bookingRepository
                 .findByItemIdIn(itemRepository.findItemIdsByOwner_Id(ownerId), pageRequest, Constant.SORT_BY_DESC);
-        return filterBookingsByStatus(bookingList, state);
+
+        switch (state) {
+            case ALL:
+                return bookingList.stream()
+                        .map(bookingMapper::toBookingDto)
+                        .collect(Collectors.toList());
+
+            case CURRENT:
+                return bookingList.stream()
+                        .filter(booking -> booking.getStart().isBefore(now) && booking.getEnd().isAfter(now))
+                        .map(bookingMapper::toBookingDto)
+                        .collect(Collectors.toList());
+
+            case FUTURE:
+                return bookingList.stream()
+                        .filter(booking -> booking.getStart().isAfter(now))
+                        .map(bookingMapper::toBookingDto)
+                        .collect(Collectors.toList());
+
+            case PAST:
+                return bookingList.stream()
+                        .filter(booking -> booking.getEnd().isBefore(now))
+                        .map(bookingMapper::toBookingDto)
+                        .collect(Collectors.toList());
+
+            case WAITING:
+                return bookingList.stream()
+                        .filter(booking -> booking.getStatus() == Status.WAITING)
+                        .map(bookingMapper::toBookingDto)
+                        .collect(Collectors.toList());
+
+            case REJECTED:
+                return bookingList.stream()
+                        .filter(booking -> booking.getStatus() == Status.REJECTED)
+                        .map(bookingMapper::toBookingDto)
+                        .collect(Collectors.toList());
+            default:
+                throw new UnknownStateException("Unknown state: " + state);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -188,48 +227,6 @@ public class BookingServiceImpl implements BookingService {
                     bookingsDto.add(bookingMapper.toBookingDto(booking));
                 }
                 return bookingsDto;
-            default:
-                throw new UnknownStateException("Unknown state: " + state);
-        }
-    }
-
-    private List<BookingDto> filterBookingsByStatus(List<Booking> bookingList, State state) {
-        LocalDateTime now = LocalDateTime.now();
-        switch (state) {
-            case ALL:
-                return bookingList.stream()
-                        .map(bookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
-
-            case CURRENT:
-                return bookingList.stream()
-                        .filter(booking -> booking.getStart().isBefore(now) && booking.getEnd().isAfter(now))
-                        .map(bookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
-
-            case FUTURE:
-                return bookingList.stream()
-                        .filter(booking -> booking.getStart().isAfter(now))
-                        .map(bookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
-
-            case PAST:
-                return bookingList.stream()
-                        .filter(booking -> booking.getEnd().isBefore(now))
-                        .map(bookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
-
-            case WAITING:
-                return bookingList.stream()
-                        .filter(booking -> booking.getStatus() == Status.WAITING)
-                        .map(bookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
-
-            case REJECTED:
-                return bookingList.stream()
-                        .filter(booking -> booking.getStatus() == Status.REJECTED)
-                        .map(bookingMapper::toBookingDto)
-                        .collect(Collectors.toList());
             default:
                 throw new UnknownStateException("Unknown state: " + state);
         }
