@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -36,12 +38,12 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
 
     @Override
-    public BookingDto getBookingById(Long id, Long userId) {
-        Booking booking = bookingRepository.findById(id).orElseThrow(()
-                -> new NotFoundException("Бронь с ID={} не найдена", id));
+    public BookingDto getBookingById(Long bookingId, Long ownerId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(()
+                -> new NotFoundException("Бронь с ID={} не найдена", bookingId));
         Item item = itemRepository.findById(booking.getItem().getId()).orElseThrow(()
-                -> new NotFoundException("Вещь с ID={} не найдена", id));
-        if (!booking.getBooker().getId().equals(userId) && !item.getOwnerId().equals(userId))
+                -> new NotFoundException("Вещь не найдена"));
+        if (!booking.getBooker().getId().equals(ownerId) && !item.getOwnerId().equals(ownerId))
             throw new NotFoundException("Даные доступны только для владельца вещи или автора брони");
         return bookingMapper.toBookingDto(booking);
     }
@@ -125,29 +127,36 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getBookingsByOwner(Long ownerId, State state) {
+    public List<BookingDto> getBookingsByOwner(Long ownerId, State state, Integer from, Integer size) {
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID = {} не найден", ownerId));
+
+        PageRequest pageRequest = PageRequest.of(from / size, size);
         List<Booking> bookingList = bookingRepository
-                .findByItemIdIn(itemRepository.findItemIdsByOwner_Id(ownerId), Constant.SORT_BY_DESC);
+                .findByItemIdIn(itemRepository.findItemIdsByOwner_Id(ownerId), pageRequest, Constant.SORT_BY_DESC);
         return filterBookingsByStatus(bookingList, state);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getBookingsByBooker(Long bookerId, State state) {
+    public List<BookingDto> getBookingsByBooker(Long bookerId, State state, Integer from, Integer size) {
         userRepository.findById(bookerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID={} не найден", bookerId));
         List<Booking> bookings;
         List<BookingDto> bookingsDto = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
+
+        PageRequest pageRequest = PageRequest.of(from / size, size);
+        Page<Booking> bookingList = bookingRepository.findAllByBookerId(bookerId, pageRequest, Constant.SORT_BY_DESC);
+
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findAllByBooker_Id(bookerId, Constant.SORT_BY_DESC);
-                for (Booking booking : bookings) {
+
+                for (Booking booking : bookingList) {
                     bookingsDto.add(bookingMapper.toBookingDto(booking));
                 }
                 return bookingsDto;
+
             case CURRENT:
                 bookings = bookingRepository.findAllByBooker_IdAndStartBeforeAndEndAfter(bookerId,
                         now, now, Constant.SORT_BY_DESC);

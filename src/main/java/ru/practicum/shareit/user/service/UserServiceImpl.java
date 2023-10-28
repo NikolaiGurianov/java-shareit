@@ -10,14 +10,12 @@ import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Data
 @Service
-@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -29,20 +27,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User createUser(UserDto userDto) {
+    public UserDto createUser(UserDto userDto) {
         if (userDto == null) throw new ErrorException("Нет данных для создания пользователя");
-        return userRepository.save(userMapper.toUser(userDto));
+        return userMapper.toUserDto(userRepository.save(userMapper.toUser(userDto)));
     }
 
 
     @Override
-    public User updateUser(UserDto userDto, Long userId) {
+    public UserDto updateUser(UserDto userDto, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(()
                 -> new NotFoundException("Пользователь не найден с ID={}", userId));
         if (userDto.getName() != null && !userDto.getName().isBlank()) user.setName(userDto.getName());
         if (userDto.getEmail() != null && !user.getEmail().equals(userDto.getEmail()))
             user.setEmail(userDto.getEmail());
-        return userRepository.save(user);
+        return userMapper.toUserDto(userRepository.save(user));
     }
 
     @Override

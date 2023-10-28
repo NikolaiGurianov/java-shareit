@@ -16,7 +16,7 @@ public class IncomingBookingDto {
     private LocalDateTime start;
     @NotNull
     private LocalDateTime end;
-    private long itemId;
-    private long bookerId;
+    private Long itemId;
+    private Long bookerId;
     private Status status;
 }

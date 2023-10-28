@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
@@ -37,41 +38,37 @@ public class ItemServiceImpl implements ItemService {
     private final CommentMapper commentMapper;
 
     @Override
-    public Item addItem(ItemDto itemDto, Long ownerId) {
+    public ItemDto addItem(ItemDto itemDto, Long ownerId) {
         User owner = userRepository.findById(ownerId).orElseThrow(()
                 -> new NotFoundException("Пользователь не найден с ID={}", ownerId));
-        return itemRepository.save(itemMapper.toItem(itemDto, owner));
+        Item item = itemRepository.save(itemMapper.toItem(itemDto, owner));
+        return itemMapper.toItemDto(item);
     }
 
     @Override
     public ItemDto updateItem(long itemId, ItemDto itemDto, Long ownerId) {
-        try {
-            Item item = itemRepository.findById(itemId).orElseThrow(()
-                    -> new NotFoundException("Вещь не найдена с ID={}", itemId));
-            if (!ownerId.equals(item.getOwnerId()))
-                throw new ErrorException("Пользователь не является владельцем данной вещи");
-            if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
-                item.setName(itemDto.getName());
-            }
-            if (itemDto.getDescription() != null
-                    && !itemDto.getDescription().isBlank()) {
-                item.setDescription(itemDto.getDescription());
-            }
-            if (itemDto.getAvailable() != null) {
-                item.setAvailable(itemDto.getAvailable());
-            }
-            return itemMapper.toItemDto(itemRepository.save(item));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("s");
+        Item item = itemRepository.findById(itemId).orElseThrow(()
+                -> new NotFoundException("Вещь не найдена с ID={}", itemId));
+        if (!ownerId.equals(item.getOwnerId()))
+            throw new ErrorException("Пользователь не является владельцем данной вещи");
+        if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
+            item.setName(itemDto.getName());
         }
+        if (itemDto.getDescription() != null
+                && !itemDto.getDescription().isBlank()) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            item.setAvailable(itemDto.getAvailable());
+        }
+        return itemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
     public ItemLastNextDto getItemById(long itemId, long userId) {
         LocalDateTime now = LocalDateTime.now();
         Item item = itemRepository.findById(itemId).orElseThrow(()
-                -> new NotFoundException("Пользователь не найден с ID={}", itemId));
+                -> new NotFoundException("Вещь не найдена с ID={}", itemId));
         Booking last = null;
         Booking next = null;
         if (item.getOwnerId().equals(userId)) {
@@ -82,9 +79,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemLastNextDto> getItemsByOwner(long ownerId) {
+    public List<ItemLastNextDto> getItemsByOwner(long ownerId, Integer from, Integer size) {
+        User owner = userRepository.findById(ownerId).orElseThrow(()
+                -> new NotFoundException("Пользователь не найден с ID={}", ownerId));
         LocalDateTime now = LocalDateTime.now();
-        List<Item> items = itemRepository.findAllByOwnerId(ownerId);
+        PageRequest pageRequest = PageRequest.of(from / size, size);
+        List<Item> items = itemRepository.findAllByOwnerId(ownerId, pageRequest);
         List<ItemLastNextDto> list = new ArrayList<>();
         Booking last;
         Booking next;
@@ -99,13 +99,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> searchItems(String text, Integer from, Integer size) {
         if (text == null || text.isBlank()) {
             return new ArrayList<>();
         }
-        List<Item> foundItems = itemRepository
-                .findByNameIsContainingIgnoreCaseOrDescriptionIsContainingIgnoreCase(text, text);
-        return foundItems.stream().filter(Item::getAvailable).map(itemMapper::toItemDto).collect(Collectors.toList());
+        PageRequest pageRequest = PageRequest.of(from / size, size);
+        List<Item> findItems = itemRepository
+                .findByNameOrDescriptionContainingIgnoreCaseAndAvailableTrue(text, text, pageRequest);
+        return findItems.stream().filter(Item::getAvailable).map(itemMapper::toItemDto).collect(Collectors.toList());
     }
 
     @Override
