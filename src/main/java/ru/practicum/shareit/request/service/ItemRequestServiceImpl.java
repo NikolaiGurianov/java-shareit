@@ -89,12 +89,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .map(ItemRequest::getId)
                 .collect(Collectors.toList());
 
-        Map<Long, List<Item>> itemsByRequests = new HashMap<>();
-        if (!requestIds.isEmpty()) {
-            itemsByRequests = itemRepository.findByRequestIdIn(requestIds, Sort.by(Sort.Direction.DESC, "id"))
-                    .stream()
-                    .collect(Collectors.groupingBy(Item::getRequestId));
-        }
+        Map<Long, List<Item>> itemsByRequests = itemRepository.findByRequestIdIn(requestIds, Sort.by(Sort.Direction.DESC, "id"))
+                .stream()
+                .collect(Collectors.groupingBy(Item::getRequestId));
+
         List<ItemRequestDto> result = new ArrayList<>();
         for (ItemRequest itemRequest : requestList) {
             List<ItemDto> itemsList = itemsByRequests.getOrDefault(itemRequest.getId(), new ArrayList<>())

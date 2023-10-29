@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -9,12 +10,13 @@ import ru.practicum.shareit.item.dto.ItemLastNextDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
@@ -46,8 +48,8 @@ public class ItemController {
     @GetMapping
     public List<ItemLastNextDto> getItemsByOwner(
             @RequestHeader("X-Sharer-User-Id") long userId,
-            @RequestParam(defaultValue = "0") @Min(0) @Positive Integer from,
-            @RequestParam(defaultValue = "20") @Min(1) Integer size) {
+            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+            @RequestParam(defaultValue = "20") @Positive Integer size) {
         log.info("Получен запрос на выдачу вещей пользователя с ID = {}", userId);
         return itemService.getItemsByOwner(userId, from, size);
     }
@@ -55,8 +57,8 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> searchItems(
             @RequestParam String text,
-            @RequestParam(defaultValue = "0") @Min(0) @Positive Integer from,
-            @RequestParam(defaultValue = "20") @Min(1) Integer size) {
+            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+            @RequestParam(defaultValue = "20") @Positive Integer size) {
         log.info("Получен запрос на поиск вещей по ключевому слову {}", text);
         return itemService.searchItems(text, from, size);
     }

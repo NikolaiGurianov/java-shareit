@@ -2,17 +2,19 @@ package ru.practicum.shareit.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exception.ErrorException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
@@ -37,8 +39,8 @@ public class ItemRequestController {
     @GetMapping("/all")
     public List<ItemRequestDto> getAllRequests(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(defaultValue = "0") @Min(0) @Positive Integer from,
-            @RequestParam(defaultValue = "20") @Min(1) Integer size) {
+            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+            @RequestParam(defaultValue = "20") @Positive Integer size) {
         log.info("Получен запрос на получение списка запросов с параметрами, созданные другими пользователями");
         if (from >= 0 && size > 0) {
             return itemRequestService.getAllRequests(userId, from, size);

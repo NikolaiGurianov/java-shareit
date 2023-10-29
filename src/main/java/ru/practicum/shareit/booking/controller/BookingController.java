@@ -60,7 +60,6 @@ public class BookingController {
             @RequestParam(defaultValue = "0") @PositiveOrZero int from,
             @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Получен запрос на выдачу вещей, забронированных пользователем с ID = {}", bookerId);
-        log.info("from = {}, size = {}", from, size);
         return bookingService.getBookingsByBooker(bookerId, state, from, size);
     }
 
@@ -71,7 +70,6 @@ public class BookingController {
             @RequestParam(defaultValue = "0") @PositiveOrZero int from,
             @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Получен запрос на выдачу вещей, принадлежащих пользователю с ID = {}", ownerId);
-        log.info("from = {}, size = {}", from, size);
         return bookingService.getBookingsByOwner(ownerId, state, from, size);
     }
 }

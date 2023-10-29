@@ -13,6 +13,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.util.Constant;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,8 +62,7 @@ public class BookingRepositoryTest {
     void whenFindAllByBookerIdIsSuccess() {
         Page<Booking> result = bookingRepository.findAllByBookerId(
                 booker.getId(),
-                PageRequest.of(0, 10),
-                null);
+                PageRequest.of(0, 10, Constant.SORT_BY_DESC));
 
         assertEquals(3, result.getTotalElements());
     }
