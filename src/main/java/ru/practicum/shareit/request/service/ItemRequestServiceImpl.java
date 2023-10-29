@@ -16,6 +16,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.Constant;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,8 +47,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequestDto> getRequestsByOwner(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NotFoundException("Пользователь не найден с ID={}", userId));
+        PageRequest pageRequest = PageRequest.of(0, 20, Constant.SORT_BY_DESC_CREATED);
 
-        List<ItemRequest> requestsList = itemRequestRepository.findAllByRequesterIdOrderByCreatedDesc(userId);
+        List<ItemRequest> requestsList = itemRequestRepository.findAllByRequesterId(userId, pageRequest);
 
         List<Long> requestIds = requestsList.stream()
                 .map(ItemRequest::getId)
@@ -79,9 +81,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("Пользователь не найден с ID={}", userId));
 
-        PageRequest pageRequest = PageRequest.of(from / size, size);
+        PageRequest pageRequest = PageRequest.of(from / size, size, Constant.SORT_BY_DESC_CREATED);
         List<ItemRequest> requestList =
-                itemRequestRepository.findAllByRequesterIdNotOrderByCreatedDesc(userId, pageRequest);
+                itemRequestRepository.findAllByRequesterIdNot(userId, pageRequest);
 
         List<Long> requestIds = requestList.stream()
                 .map(ItemRequest::getId)

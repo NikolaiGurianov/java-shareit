@@ -118,7 +118,7 @@ class ItemRequestServiceImplTest {
         requestList.add(itemRequest);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-        when(itemRequestRepository.findAllByRequesterIdOrderByCreatedDesc(any(Long.class))).thenReturn(requestList);
+        when(itemRequestRepository.findAllByRequesterId(any(Long.class), any())).thenReturn(requestList);
 
         List<ItemRequestDto> expected = List.of(itemRequestDto);
         List<ItemRequestDto> actual = itemRequestService.getRequestsByOwner(user.getId());
@@ -140,7 +140,7 @@ class ItemRequestServiceImplTest {
         List<ItemRequest> requestList = List.of(itemRequest);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-        when(itemRequestRepository.findAllByRequesterIdNotOrderByCreatedDesc(any(Long.class), any())).thenReturn(requestList);
+        when(itemRequestRepository.findAllByRequesterIdNot(any(Long.class), any())).thenReturn(requestList);
 
         List<ItemRequestDto> expected = List.of(itemRequestDto);
         List<ItemRequestDto> actual = itemRequestService.getAllRequests(1L, 0, 10);

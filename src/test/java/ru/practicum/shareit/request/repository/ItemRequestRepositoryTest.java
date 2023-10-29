@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.util.Constant;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -63,7 +64,8 @@ class ItemRequestRepositoryTest {
     void whenFindAllByRequesterIdOrderByCreatedDescIsSuccess() {
         List<ItemRequest> expected = List.of(request2, request1);
 
-        List<ItemRequest> actual = itemRequestRepository.findAllByRequesterIdOrderByCreatedDesc(user1.getId());
+        List<ItemRequest> actual = itemRequestRepository.findAllByRequesterId(user1.getId(),
+                PageRequest.of(0, 3, Constant.SORT_BY_DESC_CREATED));
 
         assertEquals(expected, actual);
     }
@@ -73,7 +75,8 @@ class ItemRequestRepositoryTest {
         List<ItemRequest> expected = List.of(request3);
 
         List<ItemRequest> actual = itemRequestRepository
-                .findAllByRequesterIdNotOrderByCreatedDesc(user1.getId(), PageRequest.of(0, 3));
+                .findAllByRequesterIdNot(user1.getId(),
+                        PageRequest.of(0, 3, Constant.SORT_BY_DESC_CREATED));
 
         assertEquals(expected, actual);
     }

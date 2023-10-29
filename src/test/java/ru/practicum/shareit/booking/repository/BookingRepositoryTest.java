@@ -112,14 +112,6 @@ public class BookingRepositoryTest {
         assertEquals(2, result.size());
     }
 
-    @Test
-    void whenFindByItemIdInIsSuccess() {
-        List<Long> itemIds = List.of(booking1.getItem().getId(), booking2.getItem().getId(), booking3.getItem().getId());
-
-        List<Booking> result = bookingRepository.findByItemIdIn(itemIds, PageRequest.of(0, 10), null);
-
-        assertEquals(3, result.size());
-    }
 
     @Test
     void whenFindByItem_IdIsSuccess() {
@@ -151,5 +143,57 @@ public class BookingRepositoryTest {
         );
 
         assertFalse(result);
+    }
+
+    @Test
+    void whenFindCurrentForDateByOwnerIsSuccess() {
+        Page<Booking> result = bookingRepository.findCurrentForDateByOwner(
+                item.getOwner().getId(),
+                now.plusMinutes(15),
+                PageRequest.of(0, 10)
+        );
+
+        assertEquals(1, result.getTotalElements());
+    }
+
+    @Test
+    void whenFindFutureForDateByOwnerIsSuccess() {
+        Page<Booking> result = bookingRepository.findFutureForDateByOwner(
+                item.getOwner().getId(),
+                now.minusMinutes(15),
+                PageRequest.of(0, 10)
+        );
+
+        assertEquals(2, result.getTotalElements());
+    }
+
+    @Test
+    void whenFindPastForDateByOwnerIsSuccess() {
+        Page<Booking> result = bookingRepository.findPastForDateByOwner(
+                item.getOwner().getId(),
+                now.plusHours(4),
+                PageRequest.of(0, 10)
+        );
+        assertEquals(2, result.getTotalElements());
+    }
+
+    @Test
+    void whenFindWaitingForDateByOwnerIsSuccess() {
+        Page<Booking> result = bookingRepository.findWaitingForDateByOwner(
+                item.getOwner().getId(),
+                PageRequest.of(0, 10)
+        );
+
+        assertEquals(1, result.getTotalElements());
+    }
+
+    @Test
+    void whenFindRejectedForDateByOwnerIsSuccess() {
+        Page<Booking> result = bookingRepository.findRejectedForDateByOwner(
+                item.getOwner().getId(),
+                PageRequest.of(0, 10)
+        );
+
+        assertEquals(0, result.getTotalElements());
     }
 }

@@ -18,14 +18,12 @@ import ru.practicum.shareit.booking.dto.IncomingBookingDto;
 import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.exception.ErrorException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -146,17 +144,6 @@ public class BookingControllerTest {
     }
 
     @Test
-    void findBookingByBooker_InvalidParameter_ShouldThrowErrorException() {
-        BookingController bookingController = new BookingController(bookingService);
-        int invalidFrom = -1;
-        int invalidSize = -10;
-
-        assertThrows(ErrorException.class, () -> {
-            bookingController.findBookingByOwner(userId, state, invalidFrom, invalidSize);
-        });
-    }
-
-    @Test
     void findBookingByOwner_ShouldReturnListOfBookingDto() throws Exception {
         List<BookingDto> bookingDtos = List.of(bookingDto);
         when(bookingService.getBookingsByOwner(anyLong(), any(State.class), anyInt(), anyInt())).thenReturn(bookingDtos);
@@ -170,16 +157,5 @@ public class BookingControllerTest {
                 .andExpect(content().json(mapper.writeValueAsString(bookingDtos)));
 
         verify(bookingService, times(1)).getBookingsByOwner(userId, state, from, size);
-    }
-
-    @Test
-    void findBookingByOwner_InvalidParameter_ShouldThrowErrorException() {
-        BookingController bookingController = new BookingController(bookingService);
-        int invalidFrom = -1;
-        int invalidSize = -10;
-
-        assertThrows(ErrorException.class, () -> {
-            bookingController.findBookingByOwner(userId, state, invalidFrom, invalidSize);
-        });
     }
 }

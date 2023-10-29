@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.mapper;
+package ru.practicum.shareit.booking.dto;
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.booking.dto.BookingDto;

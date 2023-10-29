@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user.mapper;
+package ru.practicum.shareit.user.dto;
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.user.dto.UserDto;

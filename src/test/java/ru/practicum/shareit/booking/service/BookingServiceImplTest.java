@@ -294,7 +294,7 @@ class BookingServiceImplTest {
         bookings.add(booking1);
 
         lenient().when(userRepository.findById(anyLong())).thenReturn(Optional.of(owner));
-        when(bookingRepository.findByItemIdIn(any(), any(), any())).thenReturn(bookings);
+        when(bookingRepository.findByItemIdIn(any(), any())).thenReturn(bookings);
 
         List<BookingDto> expected = bookings.stream().map(bookingMapper::toBookingDto).collect(Collectors.toList());
         List<BookingDto> actual = bookingService.getBookingsByOwner(owner.getId(), State.ALL, 0, 10);

@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,7 +27,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByBooker_IdAndStatus(Long bookerId, Status status, Sort sort);
 
 
-    List<Booking> findByItemIdIn(List<Long> itemIds, PageRequest pageRequest, Sort sort);
+    List<Booking> findByItemIdIn(List<Long> itemIds, Pageable pageable);
 
     List<Booking> findByItem_Id(Long itemId);
 
@@ -46,5 +47,31 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     boolean existsByBooker_IdAndEndBeforeAndStatus(Long userId, LocalDateTime dateTime, Status status);
 
+    @Query("SELECT b FROM Booking b " +
+            "INNER JOIN b.item i " +
+            "WHERE i.owner.id = ?1 AND ?2 BETWEEN b.start AND b.end")
+    Page<Booking> findCurrentForDateByOwner(Long ownerId, LocalDateTime date, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b " +
+            "INNER JOIN b.item i " +
+            "WHERE i.owner.id = ?1 AND b.start > ?2")
+    Page<Booking> findFutureForDateByOwner(Long ownerId, LocalDateTime date, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b " +
+            "INNER JOIN b.item i " +
+            "WHERE i.owner.id = ?1 AND b.end < ?2")
+    Page<Booking> findPastForDateByOwner(Long ownerId, LocalDateTime date, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b " +
+            "INNER JOIN b.item i " +
+            "WHERE i.owner.id = ?1 " +
+            "AND b.status = 'WAITING'")
+    Page<Booking> findWaitingForDateByOwner(Long ownerId, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b " +
+            "INNER JOIN b.item i " +
+            "WHERE i.owner.id = ?1 " +
+            "AND b.status = 'REJECTED'")
+    Page<Booking> findRejectedForDateByOwner(Long ownerId, Pageable pageable);
 
 }
