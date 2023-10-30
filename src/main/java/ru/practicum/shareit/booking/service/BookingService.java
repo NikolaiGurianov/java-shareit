@@ -9,7 +9,7 @@ import java.util.List;
 public interface BookingService {
     BookingDto getBookingById(Long id, Long userId);
 
-    List<BookingDto> getBookingsByBooker(Long bookerId, State state);
+    List<BookingDto> getBookingsByBooker(Long bookerId, State state, Integer from, Integer size);
 
     BookingDto addBooking(IncomingBookingDto incomingBookingDto, Long bookerId);
 
@@ -17,6 +17,6 @@ public interface BookingService {
 
     BookingDto approvingBooking(Long bookingId, Long bookerId, Boolean approved);
 
-    List<BookingDto> getBookingsByOwner(Long ownerId, State state);
+    List<BookingDto> getBookingsByOwner(Long ownerId, State state, Integer from, Integer size);
 }
 

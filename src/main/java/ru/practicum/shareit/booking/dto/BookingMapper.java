@@ -3,16 +3,12 @@ package ru.practicum.shareit.booking.dto;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
 @Component
 @Data
 public class BookingMapper {
-    private final ItemMapper itemMapper;
-    private final UserMapper userMapper;
 
     public Booking toBooking(IncomingBookingDto incomingBookingDto, User booker, Item item) {
         Booking booking = new Booking();
