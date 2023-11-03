@@ -2,6 +2,8 @@ package ru.practicum.shareitGateway.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import javax.validation.constraints.PositiveOrZero;
 @Controller
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
+@Validated
 @Slf4j
 public class BookingController {
     private final BookingClient bookingClient;
@@ -58,10 +61,15 @@ public class BookingController {
                                                       @RequestParam(name = "state", defaultValue = "all") String stateParam,
                                                       @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                       @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        BookingState state = BookingState.from(stateParam)
-                .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
-        log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, bookerId, from, size);
-        return bookingClient.getBookings(bookerId, state, from, size);
+        try {
+            BookingState state = BookingState.from(stateParam)
+                    .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
+            log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, bookerId, from, size);
+            return bookingClient.getBookings(bookerId, state, from, size);
+        } catch (UnknownStateException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
     }
 
     @GetMapping("/owner")
@@ -69,9 +77,14 @@ public class BookingController {
                                                       @RequestParam(name = "state", defaultValue = "all") String stateParam,
                                                       @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                       @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        BookingState state = BookingState.from(stateParam)
-                .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
-        log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, ownerId, from, size);
-        return bookingClient.getBookingsForOwner(ownerId, state, from, size);
+        try {
+            BookingState state = BookingState.from(stateParam)
+                    .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
+            log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, ownerId, from, size);
+            return bookingClient.getBookings(ownerId, state, from, size);
+        } catch (UnknownStateException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
     }
 }
