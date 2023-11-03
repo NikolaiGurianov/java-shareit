@@ -52,10 +52,7 @@ public class BookingController {
         log.info("Get booking by bookingId={}, userId={}", bookingId, userId);
         return bookingClient.getBooking(userId, bookingId);
     }
-    git rm '*.DS_Store'
-    git rm '*.jar'
-    git push origin add-item-requests
-    git commit -m "ТЗ-15 remarks corrected"
+
     @GetMapping
     public ResponseEntity<Object> getBookingsByBooker(@RequestHeader("X-Sharer-User-Id") long bookerId,
                                                       @RequestParam(name = "state", defaultValue = "all") String stateParam,
