@@ -2,7 +2,6 @@ package ru.practicum.shareitGateway.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareitGateway.booking.dto.BookItemRequestDto;
 import ru.practicum.shareitGateway.booking.dto.BookingState;
 import ru.practicum.shareitGateway.exception.ValidException;
-import ru.practicum.shareitServer.exception.UnknownStateException;
+import ru.practicum.shareitGateway.exception.UnknownStateException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -36,55 +35,42 @@ public class BookingController {
         if (requestDto.getEnd().isEqual(requestDto.getStart())) {
             throw new ValidException("Время начала и окончания бронировая совпадают!");
         }
-
         return bookingClient.bookItem(userId, requestDto);
     }
 
-    @PatchMapping(value = "/{bookingId}", consumes = "application/json")
-    public ResponseEntity<Object> updateBooking(
-            @RequestHeader("X-Sharer-User-Id") long ownerId,
-            @RequestBody(required = false) BookItemRequestDto requestDto,
-            @PathVariable long bookingId,
-            @RequestParam(required = false) Boolean approved) {
-        return bookingClient.updateBooking(bookingId, ownerId, approved, requestDto);
+    @PatchMapping(value = "/{bookingId}")
+    public ResponseEntity<Object> approveBooking(@RequestHeader("X-Sharer-User-Id") long ownerId,
+                                                 @PathVariable long bookingId,
+                                                 @RequestParam(required = false) Boolean approved) {
+        return bookingClient.updateBooking(bookingId, ownerId, approved);
     }
 
-    @GetMapping("/{bookingId}")
+    @GetMapping(value = "/{bookingId}")
     public ResponseEntity<Object> getBookingById(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                 @PathVariable Long bookingId) {
+                                                 @PathVariable long bookingId) {
         log.info("Get booking by bookingId={}, userId={}", bookingId, userId);
         return bookingClient.getBooking(userId, bookingId);
     }
 
     @GetMapping
     public ResponseEntity<Object> getBookingsByBooker(@RequestHeader("X-Sharer-User-Id") long bookerId,
-                                                      @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                                      @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                                      @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        try {
-            BookingState state = BookingState.from(stateParam)
-                    .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
-            log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, bookerId, from, size);
-            return bookingClient.getBookings(bookerId, state, from, size);
-        } catch (UnknownStateException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(e.getMessage());
-        }
+                                                      @RequestParam(name = "state", defaultValue = "ALL") String stateParam,
+                                                      @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                                      @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        BookingState state = BookingState.from(stateParam)
+                .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
+        log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, bookerId, from, size);
+        return bookingClient.getBookings(bookerId, state, from, size);
     }
 
-    @GetMapping("/owner")
+    @GetMapping(value = "/owner")
     public ResponseEntity<Object> getBookingsForOwner(@RequestHeader("X-Sharer-User-Id") long ownerId,
                                                       @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                                      @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                                      @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        try {
-            BookingState state = BookingState.from(stateParam)
-                    .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
-            log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, ownerId, from, size);
-            return bookingClient.getBookings(ownerId, state, from, size);
-        } catch (UnknownStateException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(e.getMessage());
-        }
+                                                      @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                                      @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, ownerId, from, size);
+        BookingState state = BookingState.from(stateParam)
+                .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
+        return bookingClient.getBookings(ownerId, state, from, size);
     }
 }

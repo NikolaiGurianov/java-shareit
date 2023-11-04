@@ -23,7 +23,7 @@ public class UserController {
         return userClient.addUser(incomingUserDto);
     }
 
-    @PatchMapping("/{userId}")
+    @PatchMapping(value = "/{userId}")
     public ResponseEntity<Object> updateUser(@RequestBody IncomingUserDto incomingUserDto,
                                              @PathVariable long userId) {
         log.info("Update user {}, userId={}", incomingUserDto, userId);
@@ -31,7 +31,7 @@ public class UserController {
         return userClient.updateUserById(userId, incomingUserDto);
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping(value = "/{userId}")
     public ResponseEntity<Object> getUserById(@PathVariable long userId) {
         log.info("Get user with ID={}", userId);
 

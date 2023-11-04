@@ -37,7 +37,7 @@ public class ItemController {
         return itemClient.updateItem(incomingItemDto, itemId, userId);
     }
 
-    @GetMapping("/{itemId}")
+    @GetMapping(value = "/{itemId}")
     public ResponseEntity<Object> getItemById(@RequestHeader("X-Sharer-User-Id") long userId,
                                               @PathVariable long itemId) {
         log.info("Get item, itemId={}, userId={}", itemId, userId);
@@ -54,7 +54,7 @@ public class ItemController {
         return itemClient.getItemsByUser(userId, from, size);
     }
 
-    @GetMapping("/search")
+    @GetMapping(value = "/search")
     public ResponseEntity<Object> searchItems(@NotBlank @RequestParam String text,
                                               @RequestHeader("X-Sharer-User-Id") long userId,
                                               @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,

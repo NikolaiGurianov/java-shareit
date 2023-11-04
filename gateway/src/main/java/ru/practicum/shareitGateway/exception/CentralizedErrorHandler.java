@@ -7,11 +7,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
-import ru.practicum.shareitGateway.exception.ErrorException;
-import ru.practicum.shareitGateway.exception.NotFoundException;
-import ru.practicum.shareitGateway.exception.ResponseBody;
-import ru.practicum.shareitGateway.exception.UnknownStateException;
-import ru.practicum.shareitGateway.exception.ValidException;
 
 @Slf4j
 @ControllerAdvice

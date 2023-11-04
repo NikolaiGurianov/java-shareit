@@ -20,7 +20,7 @@ import javax.validation.constraints.PositiveOrZero;
 public class ItemRequestController {
     private final ItemRequestClient itemRequestClient;
 
-    @PostMapping(consumes = "application/json")
+    @PostMapping
     public ResponseEntity<Object> addRequest(@RequestHeader("X-Sharer-User-Id") long userId,
                                              @RequestBody @Valid IncomingItemRequestDto incomingItemRequestDto) {
         log.info("Creating request {}, userId={}", incomingItemRequestDto, userId);
@@ -35,7 +35,7 @@ public class ItemRequestController {
         return itemRequestClient.getItemRequestsByAuthor(userId);
     }
 
-    @GetMapping("/all")
+    @GetMapping(value = "/all")
     public ResponseEntity<Object> getAllRequests(
             @RequestHeader("X-Sharer-User-Id") long userId,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
@@ -45,7 +45,7 @@ public class ItemRequestController {
         return itemRequestClient.getItemRequestsByOther(userId, from, size);
     }
 
-    @GetMapping("/{requestId}")
+    @GetMapping(value = "/{requestId}")
     public ResponseEntity<Object> getRequestById(@RequestHeader("X-Sharer-User-Id") long userId,
                                                  @PathVariable long requestId) {
         log.info("Get request by requestId={}, userId={}", requestId, userId);
