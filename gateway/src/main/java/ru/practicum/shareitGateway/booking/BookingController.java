@@ -71,6 +71,6 @@ public class BookingController {
         log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, ownerId, from, size);
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new UnknownStateException("Unknown state: " + stateParam));
-        return bookingClient.getBookings(ownerId, state, from, size);
+        return bookingClient.getBookingsForOwner(ownerId, state, from, size);
     }
 }
