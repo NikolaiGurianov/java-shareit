@@ -45,18 +45,7 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-
-        <dependency>
-            <groupId>org.jeasy</groupId>
-            <artifactId>easy-random-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>pl.pragmatists</groupId>
-            <artifactId>JUnitParams</artifactId>
-        </dependency>
-
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
